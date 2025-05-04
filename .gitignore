@@ -75,3 +75,6 @@ DerivedDataCache/*
 
 # Mac cache files
 .DS_Store
+
+# Rider User Settings
+*.DotSettings.User
