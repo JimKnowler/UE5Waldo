@@ -21,10 +21,6 @@
 		{
 			"Name": "Waldo",
 			"Enabled": true
-		},
-		{
-			"Name": "SerialMVVM",
-			"Enabled": true
 		}
 	]
 }
