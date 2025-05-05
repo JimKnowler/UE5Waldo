@@ -38,6 +38,8 @@ bool UWaldoComponent::Connect(const FSerialPortDevice& Device, int BaudRate)
 	RegisterCallbacks();
 	
 	StateMachine->Reset(SerialPort);
+
+	OnConnected.Broadcast();
 	
 	return true;
 }
@@ -65,6 +67,8 @@ bool UWaldoComponent::Disconnect()
 	SerialPort = nullptr;
 
 	UE_LOG(LogWaldo, Log, TEXT("%hs - disconnected"), __FUNCTION__);
+
+	OnDisconnected.Broadcast();
 	
 	return true;
 }
@@ -110,9 +114,14 @@ void UWaldoComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
 		return;
 	}
 
-	if (IsConnected())
+	if (!IsConnected())
 	{
-		StateMachine->Tick(DeltaTime);
+		return;
+	}
+	
+	if (!StateMachine->Tick(DeltaTime))
+	{
+		Disconnect();
 	}
 }
 

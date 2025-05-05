@@ -24,6 +24,16 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool Disconnect();
 
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateConnected);
+	
+	UPROPERTY(BlueprintAssignable)
+	FDelegateConnected OnConnected;
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateDisconnected);
+
+	UPROPERTY(BlueprintAssignable)
+	FDelegateDisconnected OnDisconnected;
+
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateReset);
 
 	UPROPERTY(BlueprintAssignable)

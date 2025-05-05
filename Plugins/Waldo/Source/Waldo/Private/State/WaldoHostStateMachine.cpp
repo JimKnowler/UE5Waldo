@@ -19,7 +19,7 @@ void UWaldoHostStateMachine::Reset(USerialPort* inSerialPort)
 	LastCommandTime = GetTime();
 }
 
-void UWaldoHostStateMachine::Tick(float DeltaTime)
+bool UWaldoHostStateMachine::Tick(float DeltaTime)
 {
 	while (true)
 	{
@@ -41,7 +41,7 @@ void UWaldoHostStateMachine::Tick(float DeltaTime)
 				LastCommandTime = Time;
 			}
 			
-			return;
+			break;
 		}
 
 		LastCommandTime = Time;
@@ -49,8 +49,10 @@ void UWaldoHostStateMachine::Tick(float DeltaTime)
 		if (!Process(Command))
 		{
 			UE_LOG(LogWaldo, Warning, TEXT("%hs - ignoring command [%s] while in state [%s]"), __FUNCTION__, *ToString(Command.GetType()), *ToString(State));
-		}	
+		}
 	}
+
+	return true;
 }
 
 bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)

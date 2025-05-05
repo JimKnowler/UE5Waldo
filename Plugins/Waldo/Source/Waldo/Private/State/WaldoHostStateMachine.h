@@ -15,10 +15,18 @@ class UWaldoHostStateMachine : public UObject
 
 public:
 	UWaldoHostStateMachine();
-	
+
+	// Reset the StateMachine to initial conditions + use the supplied SerialPort
 	void Reset(USerialPort* SerialPort);
 
-	void Tick(float DeltaTime);
+	/**
+	 * Tick the state machine every frame
+	 * 
+	 * @param DeltaTime Time elapsed since the last frame 
+	 *
+	 * @return false, if the connection to the client has failed
+	 */
+	bool Tick(float DeltaTime);
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateReset);
 
