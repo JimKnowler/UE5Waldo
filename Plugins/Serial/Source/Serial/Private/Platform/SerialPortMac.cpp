@@ -251,13 +251,10 @@ bool FSerialPortMac::Read(TArray<uint8>& OutBuffer, int& OutBufferUsed)
 	return true;
 }
 
-bool FSerialPortMac::Write(const TArray<uint8>& Buffer, int& OutBufferUsed)
+bool FSerialPortMac::Write(const uint8* WriteBuffer, int WriteBufferSize, int& OutBufferUsed)
 {
-	const uint8* Data = Buffer.GetData();
-	const size_t NumBytes = Buffer.Num();
-	
-	::ssize_t NumBytesWritten = ::write(fd, Data, NumBytes);
-	if (NumBytesWritten > NumBytes)
+	::ssize_t NumBytesWritten = ::write(fd, WriteBuffer, WriteBufferSize);
+	if (NumBytesWritten > WriteBufferSize)
 	{
 		UE_LOG(LogSerial, Error, TEXT("%hs - failed to write [%lu]"), __FUNCTION__, NumBytesWritten);
 		return false;

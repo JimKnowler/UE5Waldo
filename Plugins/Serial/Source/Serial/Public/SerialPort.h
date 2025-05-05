@@ -82,6 +82,17 @@ public:
 	bool Write(const TArray<uint8>& Buffer, int& OutBufferUsed);
 
 	/**
+	 * 
+	 * Perform a non-blocking write.
+	 *
+	 * Note: The number of bytes returned could be smaller than the size of the buffer
+	 * @param Buffer Data to write to serial port
+	 * @param OutBufferUsed The amount of data from the buffer that was written
+	 * @return true, if any data was written to the port - check OutBufferUsed for the actual number of bytes written
+	 */
+	bool Write(const TArray<uint8, TFixedAllocator<256>>& Buffer, int& OutBufferUsed);
+
+	/**
 	 * Perform a non-blocking write of one byte
 	 * 
 	 * @param Byte The byte to write to the serial port

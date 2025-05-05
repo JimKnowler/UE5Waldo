@@ -224,11 +224,8 @@ bool FSerialPortWindows::Read(TArray<uint8>& OutBuffer, int& OutBufferUsed)
 	return true;
 }
 
-bool FSerialPortWindows::Write(const TArray<uint8>& Buffer, int& OutBufferUsed)
+bool FSerialPortWindows::Write(const uint8* WriteBuffer, int WriteBufferSize, int& OutBufferUsed)
 {
-	const uint8* WriteBuffer = Buffer.GetData();
-	const DWORD WriteBufferSize = Buffer.Num();
-	
 	DWORD Written = 0;
 	if (!::WriteFile(Port, WriteBuffer, WriteBufferSize, &Written, nullptr))
 	{

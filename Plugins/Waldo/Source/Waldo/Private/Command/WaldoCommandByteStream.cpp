@@ -52,7 +52,7 @@ bool UWaldoCommandByteStream::Receive(FWaldoCommand& OutCommand)
 }
 
 
-void UWaldoCommandByteStream::Send(const FWaldoCommand& command)
+void UWaldoCommandByteStream::Send(const FWaldoCommand& Command)
 {
     if (!ensure(SerialPort))
     {
@@ -60,34 +60,25 @@ void UWaldoCommandByteStream::Send(const FWaldoCommand& command)
         return;
     }
 
-    UE_LOG(LogWaldo, Log, TEXT("%hs - send command type [%c]"), __FUNCTION__, TCHAR(command.GetType()));
+    UE_LOG(LogWaldo, Log, TEXT("%hs - send command type [%c]"), __FUNCTION__, TCHAR(Command.GetType()));
     
-    const TArray<uint8_t>& Data = command.GetData();
+    const TArray<uint8_t>& Data = Command.GetData();
     const int DataSize = Data.Num();
     ensure(DataSize < 256);
 
     
-    const uint8_t type = static_cast<uint8_t>(command.GetType());
-
-    int Used = 0;
+    const uint8_t Type = static_cast<uint8_t>(Command.GetType());
     
-    // Guard
-    bool bSuccess = SerialPort->Write(Guard, Used);
+    TArray<uint8_t, TFixedAllocator<256>> WriteBuffer;
+    WriteBuffer.Append(Guard);
+    WriteBuffer.Add(Type);
+    WriteBuffer.Add(DataSize);
+    WriteBuffer.Append(Data);
+    
+    int Used = 0;
+    bool bSuccess = SerialPort->Write(WriteBuffer, Used);
     ensure(bSuccess);
-    ensure(Used == Guard.Num());
-
-    // 1 byte - type
-    bSuccess = SerialPort->Write(type);
-    ensure(bSuccess);
-
-    // 1 byte - payload size
-    bSuccess = SerialPort->Write(DataSize);
-    ensure(bSuccess);
-
-    // n bytes - payload
-    bSuccess = SerialPort->Write(Data, Used);
-    ensure(bSuccess);
-    ensure(Used == DataSize);
+    ensure(Used == WriteBuffer.Num());
 }
 
 void UWaldoCommandByteStream::ReadFromSerialPort()

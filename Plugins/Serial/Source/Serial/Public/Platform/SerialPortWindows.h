@@ -18,7 +18,7 @@ struct FSerialPortWindows
 	bool IsOpen() const;
 	int Available() const;
 	bool Read(TArray<uint8>& OutBuffer, int& OutBufferUsed);
-	bool Write(const TArray<uint8>& Buffer, int& OutBufferUsed);
+	bool Write(const uint8* WriteBuffer, int WriteBufferSize, int& OutBufferUsed);
 	bool Close();
 
 private:

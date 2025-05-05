@@ -90,7 +90,18 @@ bool USerialPort::Write(const TArray<uint8>& Buffer, int& OutBufferUsed)
 		return false;
 	}
 
-	return Impl.Write(Buffer, OutBufferUsed);
+	return Impl.Write(Buffer.GetData(), Buffer.Num(), OutBufferUsed);
+}
+
+bool USerialPort::Write(const TArray<uint8, TFixedAllocator<256>>& Buffer, int& OutBufferUsed)
+{
+	if (!IsOpen())
+	{
+		UE_LOG(LogSerial, Warning, TEXT("%hs - unable to write to closed port"), __FUNCTION__);
+		return false;
+	}
+
+	return Impl.Write(Buffer.GetData(), Buffer.Num(), OutBufferUsed);
 }
 
 bool USerialPort::Write(uint8 Byte)
