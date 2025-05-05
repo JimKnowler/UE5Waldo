@@ -78,3 +78,5 @@ DerivedDataCache/*
 
 # Rider User Settings
 *.DotSettings.User
+.idea
+
