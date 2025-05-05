@@ -21,10 +21,10 @@ namespace
 
     	if (size == 0)
         {
-	        return FString::Printf(TEXT("%ul:Unknown error code"), error_code);
+	        return FString::Printf(TEXT("%u:Unknown error code"), error_code);
         }
 
-    	FString Result = FString::Printf(TEXT("%ul:%s"), error_code, ANSI_TO_TCHAR(buffer) );
+    	FString Result = FString::Printf(TEXT("%u:%s"), error_code, ANSI_TO_TCHAR(buffer) );
     	
     	return Result;    	
     }
@@ -92,8 +92,13 @@ FString FSerialPortWindows::ToString() const
 
 bool FSerialPortWindows::Open(const FString& Device, int BaudRate)
 {
-	Port = ::CreateFileA(TCHAR_TO_ANSI(*Device), GENERIC_READ | GENERIC_WRITE, 0, nullptr,
-	OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	const FString FullPathToDevice = TEXT("\\\\.\\") + Device;
+
+	// do not share read/write/delete with any other process
+	constexpr int ShareMode = 0;
+	
+	Port = ::CreateFileA(TCHAR_TO_ANSI(*FullPathToDevice), GENERIC_READ | GENERIC_WRITE, ShareMode, nullptr,
+	OPEN_EXISTING, 0, nullptr);
 
 	if (Port == INVALID_HANDLE_VALUE)
 	{
@@ -110,14 +115,50 @@ bool FSerialPortWindows::Open(const FString& Device, int BaudRate)
 
 		return false;
 	}
- 
+	
+	// Set the baud rate and other options.
+	DCB State = {0};
+	::SecureZeroMemory(&State, sizeof(DCB));
+	State.DCBlength = sizeof(DCB);
+	
+	if (!::GetCommState(Port, &State))
+	{
+		UE_LOG(LogSerial, Error, TEXT("%hs - GetCommState failed [%s]"), __FUNCTION__, *GetLastErrorAsString());
+		Close();
+
+		return false;
+	}
+
+	// Set Baud / Parity
+	State.BaudRate = BaudRate;
+	State.ByteSize = 8;
+	State.Parity = NOPARITY;
+	State.StopBits = ONESTOPBIT;
+
+	// Disable Flow Control
+	State.fInX = false;
+	State.fOutX = false;
+	State.fOutxCtsFlow = false;
+	State.fRtsControl = RTS_CONTROL_DISABLE;
+	State.fDtrControl = DTR_CONTROL_DISABLE;
+	State.fOutxDsrFlow = false;
+	State.fBinary = true;
+		
+	if (!::SetCommState(Port, &State))
+	{
+		UE_LOG(LogSerial, Error, TEXT("%hs - SetCommState failed [%s]"), __FUNCTION__, *GetLastErrorAsString());
+		Close();
+
+		return false;
+	}
+
 	// Configure read and write operations to time out immediately
 	COMMTIMEOUTS Timeouts = {0};
 	Timeouts.ReadIntervalTimeout = 0;
-	Timeouts.ReadTotalTimeoutConstant = 0;
-	Timeouts.ReadTotalTimeoutMultiplier = 0;
-	Timeouts.WriteTotalTimeoutConstant = 0;
 	Timeouts.WriteTotalTimeoutMultiplier = 0;
+	Timeouts.ReadTotalTimeoutMultiplier = 0;
+	Timeouts.ReadTotalTimeoutConstant = 0;
+	Timeouts.WriteTotalTimeoutConstant = 0;
 	
 	if (!::SetCommTimeouts(Port, &Timeouts))
 	{
@@ -126,22 +167,9 @@ bool FSerialPortWindows::Open(const FString& Device, int BaudRate)
 
 		return false;
 	}
- 
-	// Set the baud rate and other options.
-	DCB State = {0};
-	State.DCBlength = sizeof(DCB);
-	State.BaudRate = BaudRate;
-	State.ByteSize = 8;
-	State.Parity = NOPARITY;
-	State.StopBits = ONESTOPBIT;
-	
-	if (!::SetCommState(Port, &State))
-	{
-		UE_LOG(LogSerial, Error, TEXT("%hs - SetCommState failed [%s]"), __FUNCTION__, *GetLastErrorAsString());
-		Close();
 
-		return false;
-	}
+	::PurgeComm(Port, PURGE_RXCLEAR);
+	::PurgeComm(Port, PURGE_TXCLEAR);
  
 	return true;
 }
@@ -188,7 +216,6 @@ bool FSerialPortWindows::Read(TArray<uint8>& OutBuffer, int& OutBufferUsed)
 	if (!::ReadFile(Port, Buffer, ReadSize, &Received, nullptr))
 	{
 		UE_LOG(LogSerial, Error, TEXT("%hs - ReadFile failed [%s]"), __FUNCTION__, *GetLastErrorAsString());
-
 		return false;
 	}
 	
@@ -206,7 +233,6 @@ bool FSerialPortWindows::Write(const TArray<uint8>& Buffer, int& OutBufferUsed)
 	if (!::WriteFile(Port, WriteBuffer, WriteBufferSize, &Written, nullptr))
 	{
 		UE_LOG(LogSerial, Error, TEXT("%hs - WriteFile failed [%s]"), __FUNCTION__, *GetLastErrorAsString());
-
 		return false;
 	}
 
