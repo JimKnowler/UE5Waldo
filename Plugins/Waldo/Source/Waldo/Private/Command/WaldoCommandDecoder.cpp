@@ -1,14 +1,14 @@
-#include "CommandDecoder.h"
+#include "WaldoCommandDecoder.h"
 
 
-FCommandDecoder::FCommandDecoder(const FCommand& inCommand) : Command(inCommand)
+FWaldoCommandDecoder::FWaldoCommandDecoder(const FWaldoCommand& inCommand) : Command(inCommand)
 {
 
 }
 
-bool FCommandDecoder::RegisterInput(FInput& outInput) const
+bool FWaldoCommandDecoder::RegisterInput(FWaldoInput& outInput) const
 {
-    if (Command.GetType() != ECommandType::RegisterInput) {
+    if (Command.GetType() != EWaldoCommandType::RegisterInput) {
         return false;
     }
 
@@ -16,7 +16,7 @@ bool FCommandDecoder::RegisterInput(FInput& outInput) const
 
     outInput.Id = data[0];
     outInput.Pin = data[1];
-    outInput.Type = static_cast<EInputType>(data[2]);
+    outInput.Type = static_cast<EWaldoInputType>(data[2]);
 
     const int LabelLength = data.Num() - 3;
     outInput.Label = TEXT("");
@@ -28,9 +28,9 @@ bool FCommandDecoder::RegisterInput(FInput& outInput) const
     return true;
 }
 
-bool FCommandDecoder::InputValue(FInputValue& outInputValue) const
+bool FWaldoCommandDecoder::InputValue(FWaldoInputValue& outInputValue) const
 {
-    if (Command.GetType() != ECommandType::InputValue) {
+    if (Command.GetType() != EWaldoCommandType::InputValue) {
         return false;
     }
 
@@ -41,9 +41,9 @@ bool FCommandDecoder::InputValue(FInputValue& outInputValue) const
     return true;
 }
 
-bool FCommandDecoder::Message(FString& outMessage) const
+bool FWaldoCommandDecoder::Message(FString& outMessage) const
 {
-    if (Command.GetType() != ECommandType::Message) {
+    if (Command.GetType() != EWaldoCommandType::Message) {
         return false;
     }
 

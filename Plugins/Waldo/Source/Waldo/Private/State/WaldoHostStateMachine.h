@@ -3,9 +3,9 @@
 #include "CoreMinimal.h"
 #include "WaldoHostState.h"
 #include "SerialPort.h"
-#include "command/Command.h"
-#include "command/CommandByteStream.h"
-#include "input/Input.h"
+#include "Command/WaldoCommand.h"
+#include "Command/WaldoCommandByteStream.h"
+#include "Input/WaldoInput.h"
 #include "WaldoHostStateMachine.generated.h"
 
 UCLASS()
@@ -30,7 +30,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDelegateMessage OnMessage;
 
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRegisterInput, const FInput&, Input);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateRegisterInput, const FWaldoInput&, Input);
 
 	UPROPERTY(BlueprintAssignable)
 	FDelegateRegisterInput OnRegisterInput;
@@ -40,7 +40,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FDelegateFrameStart OnFrameStart;
 	
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateInputValue, const FInputValue&, InputValue);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDelegateInputValue, const FWaldoInputValue&, InputValue);
 
 	UPROPERTY(BlueprintAssignable)
 	FDelegateInputValue OnInputValue;
@@ -54,7 +54,7 @@ public:
 	float MaxTimeBetweenCommands = 0.5f;
 	
 private:
-	bool Process(const FCommand& Command);
+	bool Process(const FWaldoCommand& Command);
 
 	float GetTime() const;
 	
@@ -62,7 +62,7 @@ private:
 	TObjectPtr<USerialPort> SerialPort;
 
 	UPROPERTY()
-	TObjectPtr<UCommandByteStream> CommandByteStream;
+	TObjectPtr<UWaldoCommandByteStream> CommandByteStream;
 
 	EWaldoHostState State = EWaldoHostState::None;
 	

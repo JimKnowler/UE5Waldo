@@ -1,4 +1,4 @@
-#include "CommandByteStream.h"
+#include "WaldoCommandByteStream.h"
 
 #include "LogWaldo.h"
 #include "SerialPort.h"
@@ -8,24 +8,24 @@ namespace
     constexpr int CommandHeaderSize = 2;                // [0] = Type, [1] = Size
 }
 
-UCommandByteStream::UCommandByteStream()
+UWaldoCommandByteStream::UWaldoCommandByteStream()
 {
     Buffer.Reset(32);
 
     Guard = {'W','A','L','D','O'};
 }
 
-void UCommandByteStream::Setup(USerialPort* inSerialPort)
+void UWaldoCommandByteStream::Setup(USerialPort* inSerialPort)
 {
     SerialPort = inSerialPort;
 }
 
-void UCommandByteStream::Reset()
+void UWaldoCommandByteStream::Reset()
 {
     Buffer.Reset();
 }
 
-bool UCommandByteStream::Receive(FCommand& OutCommand)
+bool UWaldoCommandByteStream::Receive(FWaldoCommand& OutCommand)
 {
     if (!ensure(SerialPort))
     {
@@ -52,7 +52,7 @@ bool UCommandByteStream::Receive(FCommand& OutCommand)
 }
 
 
-void UCommandByteStream::Send(const FCommand& command)
+void UWaldoCommandByteStream::Send(const FWaldoCommand& command)
 {
     if (!ensure(SerialPort))
     {
@@ -90,7 +90,7 @@ void UCommandByteStream::Send(const FCommand& command)
     ensure(Used == DataSize);
 }
 
-void UCommandByteStream::ReadFromSerialPort()
+void UWaldoCommandByteStream::ReadFromSerialPort()
 {
     uint8 byte;
     ensure(SerialPort->Read(byte));
@@ -98,7 +98,7 @@ void UCommandByteStream::ReadFromSerialPort()
     Buffer.Add(byte);
 }
 
-void UCommandByteStream::SkipToGuard()
+void UWaldoCommandByteStream::SkipToGuard()
 {
     // Skip bytes in the buffer if they don't begin with a valid guard.
     //
@@ -127,7 +127,7 @@ void UCommandByteStream::SkipToGuard()
     }
 }
 
-bool UCommandByteStream::IsReadyToParseCommand() const
+bool UWaldoCommandByteStream::IsReadyToParseCommand() const
 {
     const int GuardSize = Guard.Num();
     const int BufferSize = Buffer.Num();
@@ -148,7 +148,7 @@ bool UCommandByteStream::IsReadyToParseCommand() const
     return true;
 }
 
-void UCommandByteStream::ParseCommandAndConsumeBuffer(FCommand& OutCommand)
+void UWaldoCommandByteStream::ParseCommandAndConsumeBuffer(FWaldoCommand& OutCommand)
 {
     const int GuardSize = Guard.Num();
     
@@ -158,7 +158,7 @@ void UCommandByteStream::ParseCommandAndConsumeBuffer(FCommand& OutCommand)
     const int CommandSize = GuardSize + CommandHeaderSize + CommandPayloadSize;
     ensure(Buffer.Num() == CommandSize);
 
-    OutCommand.Type = static_cast<ECommandType>(Type);
+    OutCommand.Type = static_cast<EWaldoCommandType>(Type);
     OutCommand.Data.Reset();
     OutCommand.Data.Append(Buffer.GetData() + GuardSize + CommandHeaderSize, CommandPayloadSize);
 

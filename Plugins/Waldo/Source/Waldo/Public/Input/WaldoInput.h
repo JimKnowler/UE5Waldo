@@ -1,11 +1,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputType.h"
-#include "Input.generated.h"
+#include "WaldoInputType.h"
+#include "WaldoInput.generated.h"
 
+/**
+ * 
+ */
 USTRUCT()
-struct FInput {
+struct FWaldoInput {
     GENERATED_BODY()
 
     UPROPERTY()
@@ -18,5 +21,5 @@ struct FInput {
     int Id = -1;
 
     UPROPERTY()
-    EInputType Type = EInputType::Analog;
+    EWaldoInputType Type = EWaldoInputType::Analog;
 };

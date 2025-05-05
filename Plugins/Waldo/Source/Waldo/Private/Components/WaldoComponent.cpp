@@ -1,7 +1,7 @@
-#include "WaldoComponent.h"
+#include "Components/WaldoComponent.h"
 
 #include "LogWaldo.h"
-#include "state/WaldoHostStateMachine.h"
+#include "State/WaldoHostStateMachine.h"
 
 UWaldoComponent::UWaldoComponent()
 {
@@ -66,19 +66,19 @@ bool UWaldoComponent::Disconnect()
 	return true;
 }
 
-void UWaldoComponent::BindDelegateForInput(const FString& Label, FDelegateInputValue Delegate)
+void UWaldoComponent::BindDelegateForInput(const FString& Label, FDelegateWaldoInputValue Delegate)
 {
-	InputBindings.Add(FInputBound{
+	InputBindings.Add(FWaldoInputBound{
 		.Label = Label,
 		.Delegate = Delegate
 	});
 }
 
-void UWaldoComponent::UnbindDelegateForInput(const FString& Label, FDelegateInputValue Delegate)
+void UWaldoComponent::UnbindDelegateForInput(const FString& Label, FDelegateWaldoInputValue Delegate)
 {
 	for (int i = InputBindings.Num() - 1; i >= 0; i--)
 	{
-		FInputBound& Binding = InputBindings[i];
+		FWaldoInputBound& Binding = InputBindings[i];
 		if ((Binding.Label == Label) && (Binding.Delegate == Delegate))
 		{
 			InputBindings.RemoveAt(i);
@@ -130,7 +130,7 @@ void UWaldoComponent::HandleMessage(const FString& Message)
 	OnMessage.Broadcast(Message);
 }
 
-void UWaldoComponent::HandleRegisterInput(const FInput& Input)
+void UWaldoComponent::HandleRegisterInput(const FWaldoInput& Input)
 {
 	RegisteredInputs.Add(Input);
 }
@@ -140,7 +140,7 @@ void UWaldoComponent::HandleFrameStart()
 	FrameInputValues.Reset();
 }
 
-void UWaldoComponent::HandleInputValue(const FInputValue& InputValue)
+void UWaldoComponent::HandleInputValue(const FWaldoInputValue& InputValue)
 {
 	FrameInputValues.Add(InputValue);
 }
@@ -149,18 +149,18 @@ void UWaldoComponent::HandleFrameEnd()
 {
 	OnFrameStart.Broadcast();
 	
-	for (const FInput& Input: RegisteredInputs)
+	for (const FWaldoInput& Input: RegisteredInputs)
 	{
 		const int Id = Input.Id;
 		const FString& Label = Input.Label;
 		
-		for (const FInputValue& InputValue: FrameInputValues)
+		for (const FWaldoInputValue& InputValue: FrameInputValues)
 		{
 			if (Id == InputValue.Id)
 			{
 				const int Value = InputValue.Value;
 
-				for (FInputBound& Binding: InputBindings)
+				for (FWaldoInputBound& Binding: InputBindings)
 				{
 					if (Binding.Label == Label)
 					{

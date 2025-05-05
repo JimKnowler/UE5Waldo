@@ -1,29 +1,29 @@
 #pragma once
 
-#include "Command.h"
-#include "CommandByteStream.generated.h"
+#include "WaldoCommand.h"
+#include "WaldoCommandByteStream.generated.h"
 
 class USerialPort;
 /**
- * @class UCommandByteStream
+ * @class UWaldoCommandByteStream
  * @brief Parse input from serial connection to generate commands, and send responses
  * 
  */
 UCLASS()
-class UCommandByteStream : public UObject
+class UWaldoCommandByteStream : public UObject
 {
 public:
     GENERATED_BODY()
     
-    UCommandByteStream();
+    UWaldoCommandByteStream();
 
     void Setup(USerialPort* inSerialPort);
 
     void Reset();
 
-    bool Receive(FCommand& OutCommand);
+    bool Receive(FWaldoCommand& OutCommand);
     
-    void Send(const FCommand& Command);
+    void Send(const FWaldoCommand& Command);
 
 private:
     void ReadFromSerialPort();
@@ -34,7 +34,7 @@ private:
     bool IsReadyToParseCommand() const;
 
     // parse buffer into OutCommand and empty the buffer
-    void ParseCommandAndConsumeBuffer(FCommand& OutCommand);
+    void ParseCommandAndConsumeBuffer(FWaldoCommand& OutCommand);
     
     TArray<uint8> Buffer;
 

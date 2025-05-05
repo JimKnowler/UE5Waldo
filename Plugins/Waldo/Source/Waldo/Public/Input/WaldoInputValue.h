@@ -1,10 +1,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InputValue.generated.h"
+#include "WaldoInputValue.generated.h"
 
 USTRUCT()
-struct FInputValue
+struct FWaldoInputValue
 {
 	GENERATED_BODY()
 

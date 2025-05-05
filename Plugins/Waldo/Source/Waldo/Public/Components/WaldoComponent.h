@@ -1,8 +1,8 @@
 #pragma once
 
 #include "SerialPort.h"
-#include "input/InputBound.h"
-#include "input/InputValue.h"
+#include "Input/WaldoInputBound.h"
+#include "Input/WaldoInputValue.h"
 #include "WaldoComponent.generated.h"
 
 class UWaldoHostStateMachine;
@@ -40,10 +40,10 @@ public:
 	FDelegateFrameStart OnFrameStart;
 
 	UFUNCTION(BlueprintCallable)
-	void BindDelegateForInput(const FString& Label, FDelegateInputValue Delegate);
+	void BindDelegateForInput(const FString& Label, FDelegateWaldoInputValue Delegate);
 
 	UFUNCTION(BlueprintCallable)
-	void UnbindDelegateForInput(const FString& Label, FDelegateInputValue Delegate);
+	void UnbindDelegateForInput(const FString& Label, FDelegateWaldoInputValue Delegate);
 	
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDelegateFrameEnd);
 
@@ -66,13 +66,13 @@ private:
 	void HandleMessage(const FString& Message);
 	
 	UFUNCTION()
-	void HandleRegisterInput(const FInput& Input);
+	void HandleRegisterInput(const FWaldoInput& Input);
 
 	UFUNCTION()
 	void HandleFrameStart();
 
 	UFUNCTION()
-	void HandleInputValue(const FInputValue& InputValue);
+	void HandleInputValue(const FWaldoInputValue& InputValue);
 
 	UFUNCTION()
 	void HandleFrameEnd();
@@ -84,11 +84,11 @@ private:
 	TObjectPtr<UWaldoHostStateMachine> StateMachine;
 
 	UPROPERTY()
-	TArray<FInput> RegisteredInputs;
+	TArray<FWaldoInput> RegisteredInputs;
 
 	UPROPERTY()
-	TArray<FInputValue> FrameInputValues;
+	TArray<FWaldoInputValue> FrameInputValues;
 
 	UPROPERTY()
-	TArray<FInputBound> InputBindings;
+	TArray<FWaldoInputBound> InputBindings;
 };

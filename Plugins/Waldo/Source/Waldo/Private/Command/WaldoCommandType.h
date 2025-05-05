@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CommandType.generated.h"
+#include "WaldoCommandType.generated.h"
 
 UENUM()
-enum class ECommandType : int8
+enum class EWaldoCommandType : int8
 {
     // Device
     Reset = 'R',
@@ -18,21 +18,21 @@ enum class ECommandType : int8
     AcknowledgeFrame = 'K'
 };
 
-inline FString ToString(ECommandType Type)
+inline FString ToString(EWaldoCommandType Type)
 {
     switch (Type)
     {
-        case ECommandType::Reset:
+        case EWaldoCommandType::Reset:
             return "Reset";
-        case ECommandType::RegisterInput:
+        case EWaldoCommandType::RegisterInput:
             return "RegisterInput";
-        case ECommandType::StartFrame:
+        case EWaldoCommandType::StartFrame:
             return "StartFrame";
-        case ECommandType::InputValue:
+        case EWaldoCommandType::InputValue:
             return "InputValue";
-        case ECommandType::EndFrame:
+        case EWaldoCommandType::EndFrame:
             return "EndFrame";
-        case ECommandType::Message:
+        case EWaldoCommandType::Message:
             return "Message";
         default:
             return "Unknown";

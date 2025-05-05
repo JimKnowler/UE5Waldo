@@ -2,7 +2,7 @@
 
 #if PLATFORM_MAC
 
-#include "SerialPortDevice.h"
+#include "Data/SerialPortDevice.h"
 
 /**
  * Mac-specific implementation of Serial Port

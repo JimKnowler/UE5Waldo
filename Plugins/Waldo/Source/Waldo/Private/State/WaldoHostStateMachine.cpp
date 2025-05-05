@@ -1,12 +1,12 @@
 #include "WaldoHostStateMachine.h"
 
 #include "LogWaldo.h"
-#include "command/CommandDecoder.h"
-#include "command/CommandEncoder.h"
+#include "Command/WaldoCommandDecoder.h"
+#include "Command/WaldoCommandEncoder.h"
 
 UWaldoHostStateMachine::UWaldoHostStateMachine()
 {
-	CommandByteStream = CreateDefaultSubobject<UCommandByteStream>(TEXT("CommandByteStream"));
+	CommandByteStream = CreateDefaultSubobject<UWaldoCommandByteStream>(TEXT("CommandByteStream"));
 }
 
 void UWaldoHostStateMachine::Reset(USerialPort* inSerialPort)
@@ -25,7 +25,7 @@ void UWaldoHostStateMachine::Tick(float DeltaTime)
 	{
 		const float Time = GetTime();
 	
-		FCommand Command;
+		FWaldoCommand Command;
 		if (!CommandByteStream->Receive(Command))
 		{
 			const float ElapsedTime = Time - LastCommandTime;
@@ -34,8 +34,8 @@ void UWaldoHostStateMachine::Tick(float DeltaTime)
 			{
 				CommandByteStream->Reset();
 				
-				FCommand Reset;
-				FCommandEncoder(Reset).Reset();
+				FWaldoCommand Reset;
+				FWaldoCommandEncoder(Reset).Reset();
 				CommandByteStream->Send(Reset);
 
 				LastCommandTime = Time;
@@ -53,14 +53,14 @@ void UWaldoHostStateMachine::Tick(float DeltaTime)
 	}
 }
 
-bool UWaldoHostStateMachine::Process(const FCommand& Command)
+bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 {
 	switch (Command.GetType())
 	{
-	case ECommandType::Reset:
+	case EWaldoCommandType::Reset:
 		{
-			FCommand Ack;
-			FCommandEncoder(Ack).AcknowledgeReset();
+			FWaldoCommand Ack;
+			FWaldoCommandEncoder(Ack).AcknowledgeReset();
 			CommandByteStream->Send(Ack);
 
 			UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Reset'"), __FUNCTION__);
@@ -72,9 +72,9 @@ bool UWaldoHostStateMachine::Process(const FCommand& Command)
 
 			return true;
 		}
-	case ECommandType::Message:
+	case EWaldoCommandType::Message:
 		{
-			FCommandDecoder Decoder(Command);
+			FWaldoCommandDecoder Decoder(Command);
 			FString Message;
 			Decoder.Message(Message);
 
@@ -95,10 +95,10 @@ bool UWaldoHostStateMachine::Process(const FCommand& Command)
 		case EWaldoHostState::Ready:
 			switch (Command.GetType())
 			{
-				case ECommandType::RegisterInput:
+				case EWaldoCommandType::RegisterInput:
 					{
-						FCommandDecoder Decoder(Command);
-						FInput Input;
+						FWaldoCommandDecoder Decoder(Command);
+						FWaldoInput Input;
 						ensure(Decoder.RegisterInput(Input));
 						
 						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Register Input' [%s] Id [%d] Pin [%d] Type [%s]"), __FUNCTION__, *Input.Label, Input.Id, Input.Pin, *ToString(Input.Type));
@@ -106,7 +106,7 @@ bool UWaldoHostStateMachine::Process(const FCommand& Command)
 						OnRegisterInput.Broadcast(Input);
 					}
 					return true;
-				case ECommandType::StartFrame:
+				case EWaldoCommandType::StartFrame:
 					UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Start Frame'"), __FUNCTION__);
 									
 					State = EWaldoHostState::Frame;
@@ -121,10 +121,10 @@ bool UWaldoHostStateMachine::Process(const FCommand& Command)
 		case EWaldoHostState::Frame:
 			switch (Command.GetType())
 			{
-				case ECommandType::InputValue:
+				case EWaldoCommandType::InputValue:
 					{
-						FCommandDecoder Decoder(Command);
-						FInputValue InputValue;
+						FWaldoCommandDecoder Decoder(Command);
+						FWaldoInputValue InputValue;
 						ensure(Decoder.InputValue(InputValue));
 						
 						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Input Value' [%d] for Id [%d]"), __FUNCTION__, InputValue.Value, InputValue.Id);
@@ -132,12 +132,12 @@ bool UWaldoHostStateMachine::Process(const FCommand& Command)
 						OnInputValue.Broadcast(InputValue);
 					}
 					return true;
-				case ECommandType::EndFrame:
+				case EWaldoCommandType::EndFrame:
 					{
 						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'End Frame'"), __FUNCTION__);
 												
-						FCommand Ack;
-						FCommandEncoder(Ack).AcknowledgeFrame();
+						FWaldoCommand Ack;
+						FWaldoCommandEncoder(Ack).AcknowledgeFrame();
 						CommandByteStream->Send(Ack);
 				
 						State = EWaldoHostState::Ready;

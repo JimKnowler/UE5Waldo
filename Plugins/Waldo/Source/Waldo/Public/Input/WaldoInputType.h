@@ -1,18 +1,18 @@
 #pragma once
 
 UENUM()
-enum class EInputType : uint8 {
+enum class EWaldoInputType : uint8 {
     Digital = 0,
     Analog = 1
 };
 
-inline FString ToString(EInputType Type)
+inline FString ToString(EWaldoInputType Type)
 {
     switch (Type)
     {
-        case EInputType::Digital:
+        case EWaldoInputType::Digital:
             return "Digital";
-        case EInputType::Analog:
+        case EWaldoInputType::Analog:
             return "Analog";
         default:
             return "Unknown";

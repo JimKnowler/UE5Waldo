@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
-#include "SerialPortDevice.h"
+#include "Data/SerialPortDevice.h"
 #include "SerialSubsystem.generated.h"
 
 /**

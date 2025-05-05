@@ -4,7 +4,7 @@
 
 #include <windows.h>
 
-#include "SerialPortDevice.h"
+#include "Data/SerialPortDevice.h"
 
 /**
  * Windows-specific implementation of Serial Port
