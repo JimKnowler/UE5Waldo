@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "SerialPortDevice.h"
-#include "Kismet/BlueprintFunctionLibrary.h"
 #include "SerialSubsystem.generated.h"
 
 /**
- * 
+ * Enumerate Serial Port Devices that are already connected, and broadcast events whenever a device is added / removed.
  */
 UCLASS()
 class SERIAL_API USerialSubsystem : public UGameInstanceSubsystem
@@ -22,7 +21,7 @@ public:
 	/**
 	 * How often the connected serial ports should be polled
 	 */
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float PollInterval = 1.0f;
 	
 	/**
