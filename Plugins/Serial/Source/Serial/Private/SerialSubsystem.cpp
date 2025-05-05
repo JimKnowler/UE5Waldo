@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "SerialSubsystem.h"
+﻿#include "SerialSubsystem.h"
 #include "SerialPort.h"
 
 TArray<FSerialPortDevice> USerialSubsystem::EnumerateSerialPortDevices()
