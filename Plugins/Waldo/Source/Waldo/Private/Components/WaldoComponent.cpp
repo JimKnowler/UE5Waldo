@@ -5,14 +5,17 @@
 
 UWaldoComponent::UWaldoComponent()
 {
-	StateMachine = CreateDefaultSubobject<UWaldoHostStateMachine>("StateMachine");
-
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 }
 
 bool UWaldoComponent::Connect(const FSerialPortDevice& Device, int BaudRate)
 {
+	if (!ensure(IsValid(StateMachine)))
+	{
+		return false;
+	}
+	
 	if (IsConnected())
 	{
 		UE_LOG(LogWaldo, Error, TEXT("%hs - already connected"), __FUNCTION__);
@@ -86,10 +89,26 @@ void UWaldoComponent::UnbindDelegateForInput(const FString& Label, FDelegateWald
 	}
 }
 
+void UWaldoComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	StateMachine = NewObject<UWaldoHostStateMachine>(this);
+	if (!ensure(IsValid(StateMachine)))
+	{
+		UE_LOG(LogWaldo, Error, TEXT("%hs - failed to create State Machine"), __FUNCTION__);
+	}
+}
+
 void UWaldoComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
-                                      FActorComponentTickFunction* ThisTickFunction)
+                                    FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	if (!ensure(IsValid(StateMachine)))
+	{
+		return;
+	}
 
 	if (IsConnected())
 	{
@@ -99,6 +118,11 @@ void UWaldoComponent::TickComponent(float DeltaTime, enum ELevelTick TickType,
 
 void UWaldoComponent::RegisterCallbacks()
 {
+	if (!ensure(IsValid(StateMachine)))
+	{
+		return;
+	}
+	
 	StateMachine->OnReset.AddDynamic(this, &ThisClass::HandleReset);
 	StateMachine->OnMessage.AddDynamic(this, &ThisClass::HandleMessage);
 	StateMachine->OnRegisterInput.AddDynamic(this, &ThisClass::HandleRegisterInput);
@@ -109,6 +133,11 @@ void UWaldoComponent::RegisterCallbacks()
 
 void UWaldoComponent::UnregisterCallbacks()
 {
+	if (!ensure(IsValid(StateMachine)))
+	{
+		return;
+	}
+	
 	StateMachine->OnReset.RemoveDynamic(this, &ThisClass::HandleReset);
 	StateMachine->OnMessage.RemoveDynamic(this, &ThisClass::HandleMessage);
 	StateMachine->OnRegisterInput.RemoveDynamic(this, &ThisClass::HandleRegisterInput);
