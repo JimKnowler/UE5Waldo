@@ -1,4 +1,4 @@
-# UE5 Waldo
+# Waldo for Unreal Engine 5
 
 Use analog + digital inputs on an Arduino to control a virtual puppet in Unreal Engine 5.
 
@@ -23,4 +23,6 @@ Inspired by digital puppetry built at Henson Studios.
 - See the Arduino Library https://github.com/JimKnowler/Arduino_Waldo
 - Available in the Library Manager in Arduino IDE as 'Waldo'
 
+## UE5
 
+- Developed and Tested with UE5.5
