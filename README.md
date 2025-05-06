@@ -1,6 +1,6 @@
 # UE5 Waldo
 
-Use analog + digital sensors to control a virtual puppet in Unreal Engine 5.
+Use analog + digital inputs on an Arduino to control a virtual puppet in Unreal Engine 5.
 
 Inspired by digital puppetry built at Henson Studios.
 
