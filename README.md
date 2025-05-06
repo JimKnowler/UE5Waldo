@@ -1,4 +1,4 @@
-# Arduino_Waldo
+# UE5 Waldo
 
 Use analog + digital sensors to control a virtual puppet in Unreal Engine 5.
 
