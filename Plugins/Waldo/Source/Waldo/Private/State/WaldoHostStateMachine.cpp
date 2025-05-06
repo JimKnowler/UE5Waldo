@@ -35,8 +35,12 @@ bool UWaldoHostStateMachine::Tick(float DeltaTime)
 				CommandByteStream->Reset();
 				
 				FWaldoCommand Reset;
-				FWaldoCommandEncoder(Reset).Reset();
-				CommandByteStream->Send(Reset);
+				FWaldoCommandEncoder(Reset).EncodeReset();
+				if (!CommandByteStream->Send(Reset))
+				{
+					UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to send 'Reset'"), __FUNCTION__);
+					return false;
+				}
 
 				LastCommandTime = Time;
 			}
@@ -45,9 +49,18 @@ bool UWaldoHostStateMachine::Tick(float DeltaTime)
 		}
 
 		LastCommandTime = Time;
-		
-		if (!Process(Command))
+
+		bool HasErrored = false;
+		if (!Process(Command, HasErrored))
 		{
+			if (HasErrored)
+			{
+				// TODO: state could have changed while trying to process the command
+				
+				UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to process command [%s] while in state [%s]"), __FUNCTION__, *ToString(Command.GetType()), *ToString(State));
+				return false;
+			}
+
 			UE_LOG(LogWaldo, Warning, TEXT("%hs - ignoring command [%s] while in state [%s]"), __FUNCTION__, *ToString(Command.GetType()), *ToString(State));
 		}
 	}
@@ -55,17 +68,22 @@ bool UWaldoHostStateMachine::Tick(float DeltaTime)
 	return true;
 }
 
-bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
+bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command, bool& OutHasErrored)
 {
 	switch (Command.GetType())
 	{
 	case EWaldoCommandType::Reset:
 		{
-			FWaldoCommand Ack;
-			FWaldoCommandEncoder(Ack).AcknowledgeReset();
-			CommandByteStream->Send(Ack);
-
 			UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Reset'"), __FUNCTION__);
+			
+			FWaldoCommand Ack;
+			FWaldoCommandEncoder(Ack).EncodeAcknowledgeReset();
+			if (!CommandByteStream->Send(Ack))
+			{
+				UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to send 'AcknowledgeReset'"), __FUNCTION__);
+				OutHasErrored = true;
+				return false;
+			}
 			
 			CommandByteStream->Reset();
 			State = EWaldoHostState::Ready;
@@ -78,7 +96,12 @@ bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 		{
 			FWaldoCommandDecoder Decoder(Command);
 			FString Message;
-			Decoder.Message(Message);
+			if (!Decoder.DecodeMessage(Message))
+			{
+				UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to decode 'Message'"), __FUNCTION__);
+				OutHasErrored = true;
+				return false;
+			}
 
 			UE_LOG(LogWaldo, Log, TEXT("%hs - received 'message' [%s]"), __FUNCTION__, *Message);
 
@@ -101,7 +124,12 @@ bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 					{
 						FWaldoCommandDecoder Decoder(Command);
 						FWaldoInput Input;
-						ensure(Decoder.RegisterInput(Input));
+						if (!ensure(Decoder.DecodeRegisterInput(Input)))
+						{
+							UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to decode 'RegisterInput'"), __FUNCTION__);
+							OutHasErrored = true;
+							return false;
+						}
 						
 						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Register Input' [%s] Id [%d] Pin [%d] Type [%s]"), __FUNCTION__, *Input.Label, Input.Id, Input.Pin, *ToString(Input.Type));
 
@@ -127,7 +155,12 @@ bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 					{
 						FWaldoCommandDecoder Decoder(Command);
 						FWaldoInputValue InputValue;
-						ensure(Decoder.InputValue(InputValue));
+						if (!ensure(Decoder.DecodeInputValue(InputValue)))
+						{
+							UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to decode 'InputValue'"), __FUNCTION__);
+							OutHasErrored = true;
+							return false;
+						}
 						
 						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'Input Value' [%d] for Id [%d]"), __FUNCTION__, InputValue.Value, InputValue.Id);
 
@@ -136,11 +169,16 @@ bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 					return true;
 				case EWaldoCommandType::EndFrame:
 					{
-						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'End Frame'"), __FUNCTION__);
+						UE_LOG(LogWaldo, Log, TEXT("%hs - received 'EndFrame'"), __FUNCTION__);
 												
 						FWaldoCommand Ack;
-						FWaldoCommandEncoder(Ack).AcknowledgeFrame();
-						CommandByteStream->Send(Ack);
+						FWaldoCommandEncoder(Ack).EncodeAcknowledgeFrame();
+						if (!CommandByteStream->Send(Ack))
+						{
+							UE_LOG(LogWaldo, Warning, TEXT("%hs - failed to send 'AcknowledgeFrame'"), __FUNCTION__);
+							OutHasErrored = true;
+							return false;
+						}
 				
 						State = EWaldoHostState::Ready;
 
@@ -154,6 +192,7 @@ bool UWaldoHostStateMachine::Process(const FWaldoCommand& Command)
 		break;
 		default:
 			UE_LOG(LogWaldo, Warning, TEXT("%hs - unknown state [%s]"), __FUNCTION__, *ToString(State));
+			OutHasErrored = true;
 			break;
 	}
 

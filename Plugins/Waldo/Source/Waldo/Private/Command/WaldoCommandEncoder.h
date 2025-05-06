@@ -9,16 +9,16 @@ public:
     ///////////////////////////////////////////////////
     // Device
 
-    FWaldoCommand& Reset();
+    FWaldoCommand& EncodeReset();
     
-    FWaldoCommand& Message(const FString& message);
+    FWaldoCommand& EncodeMessage(const FString& message);
 
     ///////////////////////////////////////////////////
     // Host
 
-    FWaldoCommand& AcknowledgeReset();
+    FWaldoCommand& EncodeAcknowledgeReset();
 
-    FWaldoCommand& AcknowledgeFrame();
+    FWaldoCommand& EncodeAcknowledgeFrame();
 
 private:
     FWaldoCommand& Command;

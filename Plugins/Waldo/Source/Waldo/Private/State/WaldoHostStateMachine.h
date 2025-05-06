@@ -62,7 +62,7 @@ public:
 	float MaxTimeBetweenCommands = 0.5f;
 	
 private:
-	bool Process(const FWaldoCommand& Command);
+	bool Process(const FWaldoCommand& Command, bool& OutHasErrored);
 
 	float GetTime() const;
 	

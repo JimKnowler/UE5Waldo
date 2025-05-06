@@ -6,7 +6,7 @@ FWaldoCommandDecoder::FWaldoCommandDecoder(const FWaldoCommand& inCommand) : Com
 
 }
 
-bool FWaldoCommandDecoder::RegisterInput(FWaldoInput& outInput) const
+bool FWaldoCommandDecoder::DecodeRegisterInput(FWaldoInput& outInput) const
 {
     if (Command.GetType() != EWaldoCommandType::RegisterInput) {
         return false;
@@ -28,7 +28,7 @@ bool FWaldoCommandDecoder::RegisterInput(FWaldoInput& outInput) const
     return true;
 }
 
-bool FWaldoCommandDecoder::InputValue(FWaldoInputValue& outInputValue) const
+bool FWaldoCommandDecoder::DecodeInputValue(FWaldoInputValue& outInputValue) const
 {
     if (Command.GetType() != EWaldoCommandType::InputValue) {
         return false;
@@ -41,7 +41,7 @@ bool FWaldoCommandDecoder::InputValue(FWaldoInputValue& outInputValue) const
     return true;
 }
 
-bool FWaldoCommandDecoder::Message(FString& outMessage) const
+bool FWaldoCommandDecoder::DecodeMessage(FString& outMessage) const
 {
     if (Command.GetType() != EWaldoCommandType::Message) {
         return false;

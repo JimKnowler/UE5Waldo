@@ -5,7 +5,7 @@ FWaldoCommandEncoder::FWaldoCommandEncoder(FWaldoCommand& inCommand) : Command(i
 
 }
 
-FWaldoCommand& FWaldoCommandEncoder::Reset()
+FWaldoCommand& FWaldoCommandEncoder::EncodeReset()
 {
     Command.Type = EWaldoCommandType::Reset;
     Command.Data.Reset();
@@ -13,7 +13,7 @@ FWaldoCommand& FWaldoCommandEncoder::Reset()
     return Command;
 }
 
-FWaldoCommand& FWaldoCommandEncoder::Message(const FString& message)
+FWaldoCommand& FWaldoCommandEncoder::EncodeMessage(const FString& message)
 {
     Command.Type = EWaldoCommandType::Message;
 
@@ -27,7 +27,7 @@ FWaldoCommand& FWaldoCommandEncoder::Message(const FString& message)
     return Command;
 }
 
-FWaldoCommand& FWaldoCommandEncoder::AcknowledgeReset()
+FWaldoCommand& FWaldoCommandEncoder::EncodeAcknowledgeReset()
 {
     Command.Type = EWaldoCommandType::AcknowledgeReset;
     Command.Data.Reset();
@@ -35,7 +35,7 @@ FWaldoCommand& FWaldoCommandEncoder::AcknowledgeReset()
     return Command;
 }
 
-FWaldoCommand& FWaldoCommandEncoder::AcknowledgeFrame()
+FWaldoCommand& FWaldoCommandEncoder::EncodeAcknowledgeFrame()
 {
     Command.Type = EWaldoCommandType::AcknowledgeFrame;
     Command.Data.Reset();

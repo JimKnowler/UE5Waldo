@@ -52,20 +52,23 @@ bool UWaldoCommandByteStream::Receive(FWaldoCommand& OutCommand)
 }
 
 
-void UWaldoCommandByteStream::Send(const FWaldoCommand& Command)
+bool UWaldoCommandByteStream::Send(const FWaldoCommand& Command) const
 {
     if (!ensure(SerialPort))
     {
         UE_LOG(LogWaldo, Warning, TEXT("%hs - SerialPort is not connected"), __FUNCTION__);
-        return;
+        return false;
     }
 
     UE_LOG(LogWaldo, Log, TEXT("%hs - send command type [%c]"), __FUNCTION__, TCHAR(Command.GetType()));
     
     const TArray<uint8_t>& Data = Command.GetData();
     const int DataSize = Data.Num();
-    ensure(DataSize < 256);
-
+    if (!ensure(DataSize < 256))
+    {
+        UE_LOG(LogWaldo, Error, TEXT("%hs - DataSize [%d] >= 256"), __FUNCTION__, DataSize);
+        return false;
+    }
     
     const uint8_t Type = static_cast<uint8_t>(Command.GetType());
     
@@ -76,9 +79,21 @@ void UWaldoCommandByteStream::Send(const FWaldoCommand& Command)
     WriteBuffer.Append(Data);
     
     int Used = 0;
-    bool bSuccess = SerialPort->Write(WriteBuffer, Used);
-    ensure(bSuccess);
-    ensure(Used == WriteBuffer.Num());
+    const bool bSuccess = SerialPort->Write(WriteBuffer, Used);
+    if (!bSuccess)
+    {
+        UE_LOG(LogWaldo, Warning, TEXT("%hs - SerialPort::Write failed"), __FUNCTION__);
+        return false;
+    }
+    
+    const bool bAllBytesWritten = (Used == WriteBuffer.Num());
+    if (!bAllBytesWritten)
+    {
+        UE_LOG(LogWaldo, Warning, TEXT("%hs - SerialPort::Write only wrote [%d] of [%d] bytes"), __FUNCTION__, Used, WriteBuffer.Num());
+        return false;
+    }
+
+    return true;
 }
 
 void UWaldoCommandByteStream::ReadFromSerialPort()
@@ -123,7 +138,8 @@ bool UWaldoCommandByteStream::IsReadyToParseCommand() const
     const int GuardSize = Guard.Num();
     const int BufferSize = Buffer.Num();
     
-    if (BufferSize < (GuardSize + CommandHeaderSize)) {
+    if (BufferSize < (GuardSize + CommandHeaderSize))
+    {
         return false;
     }
 

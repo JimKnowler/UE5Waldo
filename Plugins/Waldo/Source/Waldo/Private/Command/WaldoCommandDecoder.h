@@ -9,11 +9,11 @@ class FWaldoCommandDecoder
 public:
     FWaldoCommandDecoder(const FWaldoCommand& command);
 
-    bool RegisterInput(FWaldoInput& outInput) const;
+    bool DecodeRegisterInput(FWaldoInput& outInput) const;
 
-    bool InputValue(FWaldoInputValue& outInputValue) const;
+    bool DecodeInputValue(FWaldoInputValue& outInputValue) const;
 
-    bool Message(FString& outMessage) const;
+    bool DecodeMessage(FString& outMessage) const;
 
 private:
     const FWaldoCommand& Command;

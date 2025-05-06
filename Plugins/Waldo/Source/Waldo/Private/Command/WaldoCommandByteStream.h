@@ -23,7 +23,7 @@ public:
 
     bool Receive(FWaldoCommand& OutCommand);
     
-    void Send(const FWaldoCommand& Command);
+    bool Send(const FWaldoCommand& Command) const;
 
 private:
     void ReadFromSerialPort();
